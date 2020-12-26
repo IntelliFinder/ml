@@ -87,7 +87,8 @@ def init_automatic_classification(regenerate_features : bool, dataset_type : str
 
     # 3.4 print nicely
     print_best_task_models(chosen_models_dict, tasks, models)
-
+    #print( forward_select(X_train, y_train, scoring) )
+    
     # 3.5 Check scores of the best model on the test dataset
     # test_best_model(tasks, models, chosen_models_dict, test_dataset, predicted_out_path)
 

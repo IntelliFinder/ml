@@ -8,6 +8,11 @@ from sklearn.utils import Bunch
 from sklearn.model_selection import GridSearchCV
 from sklearn import metrics
 
+from sklearn.model_selection import GridSearchCV
+from sklearn.pipeline import Pipeline
+from mlxtend.feature_selection import SequentialFeatureSelector as SFS
+import mlxtend
+from sklearn.neighbors import KNeighborsClassifier
 
 
 class Task(object):
@@ -120,3 +125,35 @@ def print_best_task_models(chosen_models_dict : dict, tasks : list, models : lis
 
 
 
+def forward_select(X_train, y_train, scoring):
+    """ FSF to find best features,
+    receives scoring(string) and dataset
+    """
+    knn = KNeighborsClassifier(n_neighbors=2)
+
+    sfs1 = SFS(estimator=knn, 
+            k_features=3,
+            forward=True, 
+            floating=False, 
+            scoring=scoring,
+            cv=5)
+
+    pipe = Pipeline([('sfs', sfs1), 
+                    ('knn', knn)])
+
+    param_grid = [
+    {'sfs__k_features': [5,7],
+    'sfs__estimator__n_neighbors': [1, 5, 10]}
+    ]
+
+    gs = GridSearchCV(estimator=pipe, 
+                    param_grid=param_grid, 
+                    scoring='f1', 
+                    n_jobs=1, 
+                    cv=5,
+                    iid=True,
+                    refit=True)
+
+    # run gridearch
+    gs = gs.fit(X_train, y_train)
+    return gs.best_estimator_.steps[0][1].k_feature_idx_ #returns list of best features by index
